@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Тренажер: дроби</title>
+<style>
+:root{
+  --bg:#f4f6fb; --card:#ffffff; --text:#1e2a3a; --muted:#6b7684;
+  --accent:#7c3aed; --accent2:#f2b705; --good:#2e9e5b; --bad:#d94f4f; --border:#e2e6ee;
+  --grad1:#6d5efc; --grad2:#ff7ab8; --grad3:#ffb547;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f0f1a; --card:#1c1c2e; --text:#eeeeff; --muted:#a5a5c0;
+    --accent:#a78bfa; --accent2:#ffd166; --good:#3fbf76; --bad:#f16b6b; --border:#33334d;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f0f1a; --card:#1c1c2e; --text:#eeeeff; --muted:#a5a5c0;
+  --accent:#a78bfa; --accent2:#ffd166; --good:#3fbf76; --bad:#f16b6b; --border:#33334d;
+}
+*{box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  margin:0; color:var(--text); min-height:100%;
+  background:
+    radial-gradient(circle at 15% 0%, color-mix(in srgb, var(--grad1) 35%, transparent), transparent 55%),
+    radial-gradient(circle at 90% 10%, color-mix(in srgb, var(--grad2) 30%, transparent), transparent 50%),
+    radial-gradient(circle at 50% 100%, color-mix(in srgb, var(--grad3) 25%, transparent), transparent 55%),
+    var(--bg);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  display:flex; justify-content:center;
+}
+.wrap{width:100%; max-width:480px; padding:20px 16px 40px;}
+h1{
+  font-size:22px; text-align:center; margin:8px 0 4px; font-weight:800;
+  background:linear-gradient(90deg,var(--grad1),var(--grad2),var(--grad3));
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+.sub{text-align:center; color:var(--muted); font-size:13px; margin-bottom:16px;}
+.tabs{display:flex; gap:6px; margin-bottom:16px;}
+.tab{
+  flex:1; text-align:center; padding:10px 4px; border-radius:12px;
+  background:var(--card); border:1px solid var(--border); cursor:pointer;
+  font-size:12.5px; font-weight:600; color:var(--muted); user-select:none; line-height:1.3;
+}
+.tab.active{background:linear-gradient(135deg,var(--grad1),var(--grad2)); color:#fff; border-color:transparent;}
+.card{
+  background:var(--card); border:1px solid var(--border); border-radius:18px;
+  padding:20px; margin-bottom:16px; position:relative; overflow:hidden;
+  box-shadow:0 10px 30px -12px color-mix(in srgb, var(--grad1) 40%, transparent);
+}
+.card::before{content:''; position:absolute; top:0; left:0; right:0; height:5px; background:linear-gradient(90deg,var(--grad1),var(--grad2),var(--grad3));}
+.stats{display:flex; justify-content:space-between; font-size:13px; padding:0 6px; margin-bottom:10px;}
+.stats span{background:var(--card); border:1px solid var(--border); border-radius:10px; padding:6px 12px; color:var(--muted);}
+.stats b{color:var(--accent); font-size:15px;}
+.expr{display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:18px; flex-wrap:wrap;}
+.frac{display:flex; flex-direction:column; align-items:center; justify-content:center;
+  background:color-mix(in srgb, var(--chip,var(--accent)) 18%, var(--card));
+  border:2px solid var(--chip,var(--accent)); color:var(--chip,var(--accent));
+  font-weight:800; padding:6px 14px; border-radius:14px; min-width:44px;}
+.frac .top{font-size:20px; line-height:1.1; padding-bottom:2px;}
+.frac .bar{width:100%; height:2px; background:var(--chip,var(--accent)); margin:1px 0;}
+.frac .bot{font-size:20px; line-height:1.1; padding-top:2px;}
+.sign{font-size:24px; font-weight:700; color:var(--muted);}
+.numchip-0{ --chip:#ff6b6b; } .numchip-1{ --chip:#4dc4ff; } .numchip-2{ --chip:#ffa63d; }
+.numchip-3{ --chip:#6bcb77; } .numchip-4{ --chip:#a78bfa; } .numchip-5{ --chip:#ffd93d; }
+.qmark{
+  width:48px; height:48px; border-radius:14px; border:2px dashed var(--muted); color:var(--muted);
+  display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:800;
+}
+.answer-frac{display:flex; flex-direction:column; align-items:center; gap:4px;}
+.answer-frac input{
+  width:64px; text-align:center; font-size:20px; font-weight:700; padding:8px 4px;
+  border-radius:10px; border:2px solid var(--accent); background:var(--bg); color:var(--text);
+  -moz-appearance:textfield;
+}
+.answer-frac input::-webkit-outer-spin-button,.answer-frac input::-webkit-inner-spin-button{-webkit-appearance:none; margin:0;}
+.answer-frac .divider{width:70px; height:2px; background:var(--accent);}
+button{font-size:16px; font-weight:700; padding:12px 16px; border-radius:12px; border:none; cursor:pointer; width:100%;}
+.btn-primary{background:linear-gradient(135deg,var(--grad1),var(--grad2)); color:#fff; box-shadow:0 6px 16px -6px color-mix(in srgb, var(--grad2) 60%, transparent);}
+.btn-secondary{background:transparent; color:var(--accent); border:2px solid var(--accent); margin-top:8px;}
+.compare-row{display:flex; gap:10px; margin-top:4px;}
+.compare-row button{
+  background:var(--card); color:var(--accent); border:2px solid var(--accent); font-size:22px; padding:10px;
+}
+.compare-row button:disabled{opacity:.5;}
+.feedback{min-height:26px; text-align:center; font-weight:700; margin:8px 0 4px; font-size:15px;}
+.feedback.good{color:var(--good);} .feedback.bad{color:var(--bad);}
+.explain{font-size:13.5px; color:var(--muted); background:var(--bg); border-radius:10px; padding:10px 12px;
+  margin-top:10px; line-height:1.5; display:none; white-space:pre-line; border:1px dashed var(--border);}
+.result-screen{text-align:center;}
+.grade{font-size:52px; font-weight:800; margin:6px 0;
+  background:linear-gradient(90deg,var(--grad1),var(--grad2),var(--grad3));
+  -webkit-background-clip:text; background-clip:text; color:transparent;}
+.result-screen .score-line{color:var(--muted); font-size:15px; margin-bottom:14px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>➗ Тренажер дробів</h1>
+  <div class="sub">Додавання, віднімання та порівняння дробів із різними знаменниками</div>
+
+  <div class="tabs">
+    <div class="tab active" id="tabAddSub">Додавання<br>і віднімання</div>
+    <div class="tab" id="tabCompare">Порівняння</div>
+    <div class="tab" id="tabTest">Перевір себе<br>(20 завдань)</div>
+  </div>
+
+  <div class="stats" id="statsRow">
+    <span><span id="statLabel1">Рахунок</span>: <b id="score">0</b></span>
+    <span><span id="statLabel2">Питання</span>: <b id="qnum">1</b></span>
+  </div>
+
+  <div class="card" id="card"></div>
+</div>
+
+<script>
+function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+function gcd(a,b){ a=Math.abs(a); b=Math.abs(b); return b===0 ? (a||1) : gcd(b,a%b); }
+function lcmTwo(a,b){ return (a*b)/gcd(a,b); }
+function reduce(n,d){ if(n===0) return [0,1]; const g=gcd(n,d); return [n/g, d/g]; }
+
+const MAX_DEN = 40;
+const MAX_COMMON = 40;
+const CARD_TEMPLATE =
+  '<div class="expr" id="expr"></div>'+
+  '<div id="answerArea"></div>'+
+  '<div class="feedback" id="feedback"></div>'+
+  '<div class="explain" id="explain"></div>'+
+  '<button class="btn-primary" id="checkBtn" style="display:none;">Перевірити</button>'+
+  '<button class="btn-secondary" id="nextBtn" style="display:none;">Наступне завдання →</button>';
+
+function genPair(){
+  for(let i=0;i<800;i++){
+    const d1 = randInt(2,MAX_DEN), d2 = randInt(2,MAX_DEN);
+    if(d1===d2) continue;
+    if(lcmTwo(d1,d2) <= MAX_COMMON) return {d1,d2};
+  }
+  return {d1:3,d2:4};
+}
+function fracChip(num,den,chipIdx){
+  return '<span class="frac numchip-'+(chipIdx%6)+'"><span class="top">'+num+'</span><span class="bar"></span><span class="bot">'+den+'</span></span>';
+}
+
+let mode = 'addsub';
+let score = 0, qnum = 1;
+let current = null;
+let answered = false;
+let testQueue = [], testIndex = 0, testScore = 0;
+
+let exprEl, answerAreaEl, feedbackEl, explainEl, checkBtn, nextBtn, scoreEl, qnumEl;
+const statsRow = document.getElementById('statsRow');
+const statLabel1 = document.getElementById('statLabel1');
+const statLabel2 = document.getElementById('statLabel2');
+const cardEl = document.getElementById('card');
+const tabAddSub = document.getElementById('tabAddSub');
+const tabCompare = document.getElementById('tabCompare');
+const tabTest = document.getElementById('tabTest');
+
+function mountCard(){
+  cardEl.innerHTML = CARD_TEMPLATE;
+  exprEl = document.getElementById('expr');
+  answerAreaEl = document.getElementById('answerArea');
+  feedbackEl = document.getElementById('feedback');
+  explainEl = document.getElementById('explain');
+  checkBtn = document.getElementById('checkBtn');
+  nextBtn = document.getElementById('nextBtn');
+  scoreEl = document.getElementById('score');
+  qnumEl = document.getElementById('qnum');
+  checkBtn.addEventListener('click', checkAddSub);
+  nextBtn.addEventListener('click', nextQuestion);
+}
+
+function makeAddSub(){
+  const p = genPair();
+  const n1 = randInt(1,p.d1-1), n2 = randInt(1,p.d2-1);
+  const common = lcmTwo(p.d1,p.d2);
+  let cn1 = n1*(common/p.d1), cn2 = n2*(common/p.d2);
+  let f1 = {n:n1,d:p.d1}, f2 = {n:n2,d:p.d2};
+  let op = Math.random() < 0.5 ? '+' : '-';
+  if(op === '-' && cn1 < cn2){ [f1,f2] = [f2,f1]; [cn1,cn2] = [cn2,cn1]; }
+  const resNum = op === '+' ? cn1+cn2 : cn1-cn2;
+  const [correctNum, correctDen] = reduce(resNum, common);
+  return {type:'addsub', f1, f2, op, common, cn1, cn2, correctNum, correctDen};
+}
+function makeCompare(){
+  const p = genPair();
+  const n1 = randInt(1,p.d1-1), n2 = randInt(1,p.d2-1);
+  const left = n1*p.d2, right = n2*p.d1;
+  const rel = left < right ? '<' : left > right ? '>' : '=';
+  return {type:'compare', f1:{n:n1,d:p.d1}, f2:{n:n2,d:p.d2}, rel};
+}
+
+function renderQuestion(q){
+  answered = false;
+  feedbackEl.textContent = ''; feedbackEl.className = 'feedback';
+  explainEl.style.display = 'none'; explainEl.textContent = '';
+  nextBtn.style.display = 'none';
+
+  if(q.type === 'addsub'){
+    exprEl.innerHTML =
+      fracChip(q.f1.n,q.f1.d,0) +
+      '<span class="sign">'+q.op+'</span>' +
+      fracChip(q.f2.n,q.f2.d,1) +
+      '<span class="sign">=</span>' +
+      '<span class="answer-frac">'+
+        '<input type="number" id="ansNum" inputmode="numeric" placeholder="?">'+
+        '<div class="divider"></div>'+
+        '<input type="number" id="ansDen" inputmode="numeric" placeholder="?">'+
+      '</span>';
+    answerAreaEl.innerHTML = '';
+    checkBtn.style.display = 'block';
+    document.getElementById('ansNum').focus();
+  } else {
+    exprEl.innerHTML =
+      fracChip(q.f1.n,q.f1.d,0) +
+      '<span class="qmark">?</span>' +
+      fracChip(q.f2.n,q.f2.d,1);
+    answerAreaEl.innerHTML =
+      '<div class="compare-row">'+
+        '<button data-rel="<">&lt;</button>'+
+        '<button data-rel="=">=</button>'+
+        '<button data-rel=">">&gt;</button>'+
+      '</div>';
+    checkBtn.style.display = 'none';
+    answerAreaEl.querySelectorAll('button').forEach(b=>{
+      b.addEventListener('click', ()=> checkCompare(b.dataset.rel));
+    });
+  }
+}
+
+function buildAddSubExplain(q, userOk){
+  return 'Спільний знаменник: '+q.common+'\n'+
+    q.f1.n+'/'+q.f1.d+' = '+q.cn1+'/'+q.common+'\n'+
+    q.f2.n+'/'+q.f2.d+' = '+q.cn2+'/'+q.common+'\n'+
+    q.cn1+' '+q.op+' '+q.cn2+' = '+(q.op==='+'?q.cn1+q.cn2:q.cn1-q.cn2)+'\n'+
+    'Відповідь: '+q.correctNum+'/'+q.correctDen+(q.correctDen!==q.common?' (скорочено)':'');
+}
+function buildCompareExplain(q){
+  const left = q.f1.n*q.f2.d, right = q.f2.n*q.f1.d;
+  return q.f1.n+'×'+q.f2.d+' = '+left+'\n'+q.f2.n+'×'+q.f1.d+' = '+right+'\nЗвідси: '+q.f1.n+'/'+q.f1.d+' '+q.rel+' '+q.f2.n+'/'+q.f2.d;
+}
+
+function handleResult(isCorrect, explainText){
+  answered = true;
+  checkBtn.style.display = 'none';
+  nextBtn.style.display = 'block';
+  if(mode !== 'test'){
+    if(isCorrect) score++;
+    scoreEl.textContent = score;
+  } else {
+    if(isCorrect) testScore++;
+  }
+  feedbackEl.textContent = isCorrect ? '✅ Правильно!' : '❌ Неправильно.';
+  feedbackEl.className = 'feedback ' + (isCorrect ? 'good' : 'bad');
+  explainEl.textContent = explainText;
+  explainEl.style.display = 'block';
+}
+
+function checkAddSub(){
+  if(answered) return;
+  const un = parseInt(document.getElementById('ansNum').value,10);
+  const ud = parseInt(document.getElementById('ansDen').value,10);
+  if(isNaN(un) || isNaN(ud) || ud === 0){
+    feedbackEl.textContent = 'Заповни чисельник і знаменник'; feedbackEl.className = 'feedback bad';
+    return;
+  }
+  const ok = un*current.correctDen === current.correctNum*ud;
+  handleResult(ok, buildAddSubExplain(current));
+}
+function checkCompare(rel){
+  if(answered) return;
+  const ok = rel === current.rel;
+  handleResult(ok, buildCompareExplain(current));
+}
+
+function nextQuestion(){
+  if(mode === 'test'){
+    testIndex++;
+    if(testIndex >= testQueue.length){ showTestResult(); return; }
+    current = testQueue[testIndex];
+    qnumEl.textContent = (testIndex+1)+'/'+testQueue.length;
+    renderQuestion(current);
+  } else {
+    qnum++;
+    qnumEl.textContent = qnum;
+    current = mode === 'addsub' ? makeAddSub() : makeCompare();
+    renderQuestion(current);
+  }
+}
+
+function gradeFromScore(correct, total){
+  const table = [
+    [20,12],[19,11],[18,10],[16,9],[14,8],[12,7],[10,6],[8,5],[6,4],[4,3],[2,2],[0,1]
+  ];
+  for(const [min,g] of table){ if(correct >= min) return g; }
+  return 1;
+}
+function showTestResult(){
+  const grade = gradeFromScore(testScore, testQueue.length);
+  cardEl.innerHTML =
+    '<div class="result-screen">'+
+      '<div style="font-size:15px;color:var(--muted);">Тест завершено</div>'+
+      '<div class="grade">'+grade+'/12</div>'+
+      '<div class="score-line">Правильних відповідей: '+testScore+' з '+testQueue.length+'</div>'+
+      '<button class="btn-primary" id="restartTest">Пройти тест ще раз</button>'+
+    '</div>';
+  document.getElementById('restartTest').addEventListener('click', startTest);
+}
+
+function startPractice(newMode){
+  mode = newMode;
+  statLabel1.textContent = 'Рахунок';
+  statLabel2.textContent = 'Питання';
+  mountCard();
+  score = 0; qnum = 1;
+  scoreEl.textContent = 0; qnumEl.textContent = 1;
+  current = mode === 'addsub' ? makeAddSub() : makeCompare();
+  renderQuestion(current);
+}
+function startTest(){
+  mode = 'test';
+  statLabel1.textContent = 'Правильно';
+  statLabel2.textContent = 'Питання';
+  mountCard();
+  testScore = 0; testIndex = 0;
+  testQueue = [];
+  for(let i=0;i<20;i++){ testQueue.push(Math.random() < 0.5 ? makeAddSub() : makeCompare()); }
+  scoreEl.textContent = 0; qnumEl.textContent = '1/20';
+  current = testQueue[0];
+  renderQuestion(current);
+}
+
+tabAddSub.addEventListener('click', ()=>{
+  tabAddSub.classList.add('active'); tabCompare.classList.remove('active'); tabTest.classList.remove('active');
+  startPractice('addsub');
+});
+tabCompare.addEventListener('click', ()=>{
+  tabCompare.classList.add('active'); tabAddSub.classList.remove('active'); tabTest.classList.remove('active');
+  startPractice('compare');
+});
+tabTest.addEventListener('click', ()=>{
+  tabTest.classList.add('active'); tabAddSub.classList.remove('active'); tabCompare.classList.remove('active');
+  startTest();
+});
+
+mountCard();
+current = makeAddSub();
+renderQuestion(current);
+</script>
+</body>
+</html>
